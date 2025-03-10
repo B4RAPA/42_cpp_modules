@@ -2,7 +2,7 @@
 #include "Fixed.hpp"
 
 
-const int Fixed::_fract_bits = 8;
+const int Fixed::nb_fractbits = 8;
 
 Fixed::Fixed() : fixed_value(0)
 {
