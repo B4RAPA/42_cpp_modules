@@ -6,7 +6,7 @@
 /*   By: lfabel <lfabel@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/02 13:27:48 by lfabel            #+#    #+#             */
-/*   Updated: 2025/06/19 13:17:38 by lfabel           ###   ########.fr       */
+/*   Updated: 2025/06/27 12:30:28 by lfabel           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,24 +14,30 @@
 #include <iostream>
 #include <iosfwd>
 #include <fstream>
-#include <vector>
 #include <string.h>
 #include <sstream>
 #include <stdio.h>
 #include <map>
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
+	BitcoinExchange exchange;
 	if (argc != 2)
 	{
-		std::cout << "Error could not open file" << std::endl;
-		return (0);
+		std::cerr << "Error: could not open file" << std::endl;
+		return 1;
 	}
-	std::fstream fin;
-	fin.open(argv[1], std::ios::in);
-	// std::map<std::string, float> row{argv, date};
-	std::string line, word;
-	bool	first_line = true;
+
+	std::ifstream fin(argv[1]);
+	if (!fin)
+	{
+		std::cerr << "Error: failed to open file " << argv[1] << std::endl;
+		return 1;
+	}
+
+	std::string line;
+	bool first_line = true;
+
 	while (std::getline(fin, line))
 	{
 		if (first_line)
@@ -39,18 +45,12 @@ int main(int argc, char **argv)
 			first_line = false;
 			continue;
 		}
-		// row.clear();
-		std::stringstream ss(line);
-		while (std::getline(ss, word, ss.widen('\n')))
+
+		if (!line.empty())
 		{
-			// row.push_back(word);
-		}
-		// if (!row.empty())
-		{
-			// for (int i = 0; i < static_cast<int>(row.size()); i++)
-			{
-				// validate(row[i]);
-			}
+			exchange.validate(line);
 		}
 	}
+
+	return 0;
 }

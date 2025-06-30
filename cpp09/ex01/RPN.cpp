@@ -6,7 +6,7 @@
 /*   By: lfabel <lfabel@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/03 14:19:20 by lfabel            #+#    #+#             */
-/*   Updated: 2025/06/04 12:42:36 by lfabel           ###   ########.fr       */
+/*   Updated: 2025/06/30 10:51:58 by lfabel           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,8 +47,8 @@ void RPN::calc(char **argv)
 		}
 		if (argv[1][i] == 43 || argv[1][i] == 42 || argv[1][i] == 45 || argv[1][i] == 47)
 		{
-			if (_mystack.size() != 2)
-				throw std::runtime_error("Error");
+			if (_mystack.size() < 2)
+				throw std::runtime_error("Not enough operands to test!");
 			int b = this->_mystack.top();
 			this->_mystack.pop();
 			int a = this->_mystack.top();
@@ -69,13 +69,15 @@ void RPN::calc(char **argv)
 			continue;
 		}
 		if (argv[1][i] != ' ')
-			throw std::runtime_error("error");
+			throw std::runtime_error("Wrong symbol");
 	}
+	if (_mystack.size() > 1)
+		throw std::runtime_error("Not enough operators to test!");
 }
 
 int RPN::getTop() const 
 {
 	if (_mystack.empty())
-		throw std::runtime_error("stack empty");
+		throw std::runtime_error("Stack empty");
 	return _mystack.top();
 }

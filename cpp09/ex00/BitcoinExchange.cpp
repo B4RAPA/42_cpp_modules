@@ -6,13 +6,12 @@
 /*   By: lfabel <lfabel@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/02 13:58:13 by lfabel            #+#    #+#             */
-/*   Updated: 2025/06/03 13:50:37 by lfabel           ###   ########.fr       */
+/*   Updated: 2025/06/27 12:35:43 by lfabel           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "BitcoinExchange.hpp"
 #include <string.h>
-#include <vector>
 #include <stdio.h>
 #include <sstream>
 #include <ctime>
@@ -20,7 +19,22 @@
 #include <cstdlib>
 #include <algorithm>
 
-void	validate_date(std::string row)
+BitcoinExchange::BitcoinExchange(){}
+
+BitcoinExchange::BitcoinExchange(const BitcoinExchange& other)
+{
+	(void)other;
+}
+
+BitcoinExchange& BitcoinExchange::operator=(const BitcoinExchange& other)
+{
+	(void)other; 
+	return (*this);
+}
+
+BitcoinExchange::~BitcoinExchange(){}
+
+void	BitcoinExchange::validate_date(std::string row)
 {
 	if(!row.empty())
 	{
@@ -29,6 +43,16 @@ void	validate_date(std::string row)
 			if(i == 4 || i == 7)
 			{
 				if(row[i] != '-')
+				{
+					throw DateNotValidException();
+					return;
+				}
+				if (i == 4 && row[5] == '1' && row[6] > '2')
+				{
+					throw DateNotValidException();
+					return;
+				}
+				else if ((i == 7 && row[8] > '3') || (i == 7 && row[8] >= '3' && row[9] > '0'))
 				{
 					throw DateNotValidException();
 					return;
@@ -43,7 +67,7 @@ void	validate_date(std::string row)
 	}
 }
 
-bool	validate_value(std::string row)
+bool	BitcoinExchange::validate_value(std::string row)
 {
 	std::string numStr = row.substr(12);
 	try	{
@@ -66,23 +90,23 @@ bool	validate_value(std::string row)
 	return (false);
 }
 
-const char* DateNotValidException::what() const throw()
+const char* BitcoinExchange::DateNotValidException::what() const throw()
 {
 	return ("Date is not valid. Has to be in format: YYYY-MM-DD.");
 }
 
-const char* NotAPositiveNumberException::what() const throw()
+const char* BitcoinExchange::NotAPositiveNumberException::what() const throw()
 {
 	return ("number is not positive");
 }
 
-const char* NumberTooHighException::what() const throw()
+const char* BitcoinExchange::NumberTooHighException::what() const throw()
 {
 	return ("number to large");
 }
 
 
-void validate(std::string row)
+void BitcoinExchange::validate(std::string row)
 {
 	if(!row.empty())
 	{	
@@ -91,7 +115,7 @@ void validate(std::string row)
 			validate_value(row);
 			std::string date = row.substr(0, 10);
 			std::string amount = row.substr(13);
-			std::cout << date << " => ";  // nur wenn wirklich Daten vorhanden sind
+			std::cout << date << " => ";
 			std::cout << amount << " = ";
 			float f_amount = static_cast<float>(std::strtod(amount.c_str(), NULL));
 			float sell = f_amount * get_exchange_rate(date);
@@ -108,19 +132,15 @@ void validate(std::string row)
 	}
 }
 
-float	get_exchange_rate(std::string date)
+float	BitcoinExchange::get_exchange_rate(const std::string date)
 {
 	std::fstream fin;
-	float f_upper;
-	float f_lower;
 	float rate;
-	float f_min;
 	fin.open("data.csv", std::ios::in);
 	if (!fin)
 		return (0.0f);
-	std::vector<std::string> row;
+	std::map<std::string, float> row;
 	std::string line, csv_date, csv_rate;
-	std::map<std::string, float> date_to_rate;
 	while (std::getline(fin, line))
 	{
 		std::stringstream ss(line);
@@ -131,23 +151,20 @@ float	get_exchange_rate(std::string date)
 			continue;
 		char *end;
 		rate = static_cast<float>(std::strtod(csv_rate.c_str(), &end));
-		date_to_rate[csv_date] = rate;
+		row[csv_date] = rate;
 	}
-	std::map<std::string, float>::iterator it = date_to_rate.find(date);
-	if (it != date_to_rate.end())
+	std::map<std::string, float>::iterator it = row.find(date);
+	if (it != row.end())
 		return (it->second);
-	
-	std::map<std::string, float>::iterator lower = date_to_rate.lower_bound(date);
-	if (lower != date_to_rate.end())
+	std::map<std::string, float>::iterator upper = row.upper_bound(date);
+	if (upper == row.end())
 	{
-		f_lower = lower->second;
+		upper = row.end()--;
+		return (upper->second);
 	}
-	std::map<std::string, float>::iterator upper = date_to_rate.upper_bound(date);
-	if (upper != date_to_rate.end())
-		f_upper = upper->second;
-	if (f_upper - rate < rate - f_lower)
-		f_min = f_upper;
-	else
-		f_min = f_lower;
-	return (f_min);
+	std::map<std::string, float>::iterator lower;
+	lower = upper;
+	if (lower != row.begin())
+		--lower;
+	return (lower->second);
 }
