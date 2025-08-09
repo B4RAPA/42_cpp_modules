@@ -11,7 +11,7 @@
 </p>
 
 <h3 align="center">
-	<a href="#-about">About</a>
+	<a href="#-about-the-modules">About</a>
 	<span> · </span>
 	<a href="#-usage">Usage</a>
 	<span> · </span>
@@ -90,12 +90,14 @@ Below are short descriptions of each module (00 to 09):
 ---
 
 ## 🛠️ Usage
+
 Each module is a standalone project. To compile and run a module, navigate to its directory and use:
 
 ```shell
 $ make
 ./<executable>
 ```
+---
 
 ## 📚 What I Learned
 - C++ syntax and best practices under C++98 constraints
